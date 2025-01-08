@@ -1,5 +1,5 @@
 #On charge pour les autres années
-
+library(tidyr)
 #2023
 
 base_url2 <- "https://resultscui.active.com/api/results/events/SchneiderElectricMarathondeParis2023/participants?groupId=1005392&routeId=175225"
@@ -266,45 +266,170 @@ save(merged_df, file = "merged_results2015.rda")
 
 #2017
 
-get_results_athlinks <- function(url, offset = 0, limit = 50) {
-  full_url <- paste0(url, "&from=", offset, "&limit=", limit)
-  response <- GET(full_url)
-  if (status_code(response) != 200) {
-    stop("Erreur : ", status_code(response))
-  }
-  content <- content(response, as = "text", encoding = "UTF-8")
-  json_data <- fromJSON(content)
+
+get_athlinks_results <- function(base_url, page_limit = 100, max_pages = 1000) {
+  all_results <- list()  # Liste pour stocker les résultats de chaque page
   
-  return(json_data)
+  # Boucle sur les pages
+  for (page in 1:max_pages) {
+    offset <- (page - 1) * page_limit
+    url <- paste0(base_url, "&from=", offset, "&limit=", page_limit)
+    cat("URL requêtée :", url, "\n")
+    
+    response <- GET(url, add_headers("User-Agent" = "Mozilla/5.0"))
+    
+    if (status_code(response) == 200) {
+      data_json <- fromJSON(content(response, "text", encoding = "UTF-8"))
+      
+      # Vérification de l'existence des résultats
+      if (!is.null(data_json$interval$intervalResults[[1]])) {
+        results_page <- data_json$interval$intervalResults[[1]]
+        all_results[[page]] <- results_page
+      } else {
+        cat("Fin des données atteinte : moins de", page_limit, "résultats retournés.\n")
+        break
+      }
+    } else {
+      cat("Erreur HTTP :", status_code(response), "\n")
+      break
+    }
+  }
+  
+  # Combiner tous les résultats dans un seul data frame
+  final_results <- bind_rows(lapply(all_results, as.data.frame))
+  
+  return(final_results)
 }
 
-# Exemple d'utilisation
-base_url <- "https://results.athlinks.com/event/961505?eventCourseId=2023697&divisionId=&intervalId="
-all_results <- list()
+# Exécution
+#2017
+base_url <- "https://results.athlinks.com/event/961505?eventCourseId=2023697&divisionId=27756548&intervalId="
+athlinks_results <- get_athlinks_results(base_url)
 
-# Boucle pour récupérer les pages par incréments de 50
-for (offset in seq(0, 1000, by = 50)) {
-  print(paste("Téléchargement des résultats à partir de", offset))
-  results <- get_results_athlinks(base_url, offset)
+merged_df2017 <- athlinks_results %>%
+  unnest(time) %>%  # Décompresse la colonne time pour avoir timeInMillis
+  select(country, firstName, lastName, gender, age, entryId, primaryBracketRank, timeInMillis) %>%
+  mutate(
+    # Conversion en durée formatée HH:MM:SS
+    raceTime = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(timeInMillis / 1000) %/% 3600,            # Heures
+      (as.integer(timeInMillis / 1000) %% 3600) %/% 60,    # Minutes
+      as.integer(timeInMillis / 1000) %% 60                # Secondes
+    ),
+    
+    # Ajout de l'année
+    year = 2017
+  )
+
+save(merged_df, file = "merged_results2017.rda")
+
+#2014
+base_url <- "https://results.athlinks.com/event/373568?eventCourseId=1764601&divisionId=&intervalId=&"
+athlinks_results2 <- get_athlinks_results(base_url)
+
+merged_df2017 <- athlinks_results2 %>%
+  unnest(time) %>%  # Décompresse la colonne time pour avoir timeInMillis
+  select(country, firstName, lastName, gender, age, entryId, primaryBracketRank, timeInMillis) %>%
+  mutate(
+    # Conversion en durée formatée HH:MM:SS
+    raceTime = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(timeInMillis / 1000) %/% 3600,            # Heures
+      (as.integer(timeInMillis / 1000) %% 3600) %/% 60,    # Minutes
+      as.integer(timeInMillis / 1000) %% 60                # Secondes
+    ),
+    
+    # Ajout de l'année
+    year = 2014
+  )
+
+save(merged_df, file = "merged_results2014.rda")
+
+2014 -> ""
+2013 -> "https://results.athlinks.com/event/261301?eventCourseId=369551&divisionId=16048108&intervalId=&"
+2012 -> "https://results.athlinks.com/event/188714?eventCourseId=261507&divisionId=&intervalId=&"
+2011 -> "https://results.athlinks.com/event/160138?eventCourseId=199425&divisionId=&intervalId=&"
+2010 -> "https://results.athlinks.com/event/121993?eventCourseId=166738&divisionId=&intervalId=&"
+2009 -> "https://results.athlinks.com/event/86297?eventCourseId=264050&divisionId=&intervalId=&"
+2008 -> "https://results.athlinks.com/event/170851?eventCourseId=235625&divisionId=&intervalId=&"
+2007 -> "https://results.athlinks.com/event/163635?eventCourseId=596257&divisionId=&intervalId=&"
+2006 -> "https://results.athlinks.com/event/126836?eventCourseId=146231&divisionId=&intervalId=&"
+2005 -> "https://results.athlinks.com/event/146352?eventCourseId=215850&divisionId=16066627&intervalId=&"
+2004 -> "https://results.athlinks.com/event/174931?eventCourseId=240730&divisionId=16065939&intervalId=&"
+2002 -> "https://results.athlinks.com/event/365837?eventCourseId=538412&divisionId=&intervalId=&"
+2001 -> "https://results.athlinks.com/event/55150?eventCourseId=383736&divisionId=16085183&intervalId=&"
+
+#marathon de NY
+
+
+if (!require(RSelenium)) install.packages("RSelenium", dependencies = TRUE)
+if (!require(rvest)) install.packages("rvest")
+if (!require(dplyr)) install.packages("dplyr")
+
+library(RSelenium)
+library(rvest)
+library(dplyr)
+
+# Start Selenium server
+rD <- rsDriver(browser = "chrome", chromever = "latest", verbose = FALSE)
+remDr <- rD$client
+
+# Function to scrape NYRR finishers
+scrape_nyrr_results <- function(event, start_page = 1, max_pages = 100) {
+  all_runners <- list()  # Initialize list to store results
   
-  # Vérifier si les résultats sont vides
-  if (length(results$data) == 0) {
-    print("Fin des résultats.")
-    break
+  # Loop through pages
+  for (page in start_page:max_pages) {
+    url <- paste0("https://results.nyrr.org/event/", event, "/finishers#opf=1&page=", page)
+    cat("Scraping page:", page, "\n")
+    
+    # Navigate to the URL
+    remDr$navigate(url)
+    Sys.sleep(5)  # Wait for the page to load
+    
+    # Get page source and parse HTML
+    page_source <- remDr$getPageSource()[[1]]
+    page_html <- read_html(page_source)
+    
+    # Extract runner details
+    runners <- page_html %>%
+      html_nodes(".cmd-finisher") %>%
+      lapply(function(runner) {
+        name <- runner %>% html_node(".name") %>% html_text(trim = TRUE)
+        details <- runner %>% html_node(".details") %>% html_text(trim = TRUE)
+        time <- runner %>% html_node(xpath = ".//span[contains(text(), 'Time')]/span") %>% html_text(trim = TRUE)
+        pace <- runner %>% html_node(xpath = ".//span[contains(text(), 'Pace')]/span") %>% html_text(trim = TRUE)
+        place <- runner %>% html_node(xpath = ".//span[contains(text(), 'Place')]/span") %>% html_text(trim = TRUE)
+        
+        # Return as a data frame
+        data.frame(Name = name, Details = details, Time = time, Pace = pace, Place = place, stringsAsFactors = FALSE)
+      })
+    
+    # Combine runners from current page
+    if (length(runners) > 0) {
+      all_runners[[page]] <- do.call(rbind, runners)
+    } else {
+      cat("No more runners found. Stopping.\n")
+      break
+    }
   }
   
-  # Ajouter les résultats à la liste
-  all_results <- append(all_results, results$data)
+  # Combine all pages into a single data frame
+  final_results <- do.call(rbind, all_runners)
+  
+  return(final_results)
 }
 
-# Convertir la liste en data.frame
-final_results <- do.call(rbind, lapply(all_results, as.data.frame))
+# Example usage
+event <- "M2024"  # Event code
+results <- scrape_nyrr_results(event)
 
-# Sauvegarder les résultats
-write.csv(final_results, "athlinks_results.csv", row.names = FALSE)
+# Save to CSV
+write.csv(results, "nyrr_finishers.csv", row.names = FALSE)
 
+# Stop Selenium server
+remDr$close()
+rD$server$stop()
 
-#Marathon de Valence 
-"https://results.athlinks.com/event/72408?eventCourseId=154073&divisionId=&intervalId=&from=50&limit=50"
-
-
+cat("Data saved to nyrr_finishers.csv")
