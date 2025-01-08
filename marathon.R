@@ -12,7 +12,6 @@ library(ggplot2)
 
 # Une fois que vous avez récupéré toutes les données, vous pouvez les convertir en dataframe
 
-
 get_results <- function(base_url, page_limit = 100, max_pages = 600) {
   all_results <- list()  # Liste pour stocker les résultats de chaque page
   
@@ -75,10 +74,10 @@ merged_df <- cbind(final_results_df, person_df) %>%
       as.integer(chipTimeResult) %/% 3600,        # Heures
       (as.integer(chipTimeResult) %% 3600) %/% 60, # Minutes
       as.integer(chipTimeResult) %% 60            # Secondes
-    )
-  )
+    ))
 
 save(merged_df, file = "merged_results.rda")
+
 
 
 
