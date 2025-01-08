@@ -79,5 +79,39 @@ merged_df <- cbind(final_results_df, person_df) %>%
 save(merged_df, file = "merged_results.rda")
 
 
+#2023
 
+base_url <- "https://resultscui.active.com/api/results/events/SchneiderElectricMarathondeParis2023/participants?groupId=1005392&routeId=175225"
+
+# Récupérer les résultats page par page, jusqu'à 15 pages
+results <- get_results(base_url, page_limit = 100, max_pages = 600)
+final_results_list <- lapply(results, function(result) result$finalResult)
+final_results_df <- do.call(rbind, lapply(final_results_list, as.data.frame))
+
+person_list <- lapply(results, function(result) result$person)
+person_df <- do.call(rbind, lapply(person_list, as.data.frame))
+
+# Fusionner les deux dataframes
+merged_df2 <- cbind(final_results_df, person_df) %>%
+  select(participantId, gunTimeResult, chipTimeResult, averageSpeed, disqualified, firstName, lastName, gender, age) %>%
+  mutate(
+    # Conversion de gunTimeResult en durée et formatage en HH:MM:SS
+    gunTimeResult = as.duration(gunTimeResult),  # Convertir en durée si nécessaire
+    gunTimeResult = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(gunTimeResult) %/% 3600,        # Heures
+      (as.integer(gunTimeResult) %% 3600) %/% 60, # Minutes
+      as.integer(gunTimeResult) %% 60            # Secondes
+    ),
+    # Conversion de chipTimeResult en durée et formatage en HH:MM:SS
+    chipTimeResult = as.duration(chipTimeResult),
+    chipTimeResult = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(chipTimeResult) %/% 3600,        # Heures
+      (as.integer(chipTimeResult) %% 3600) %/% 60, # Minutes
+      as.integer(chipTimeResult) %% 60            # Secondes
+    )
+  )
+
+save(merged_df, file = "merged_results.rda")
 
