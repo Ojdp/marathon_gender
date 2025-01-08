@@ -9,6 +9,9 @@ load("~/GitHub/marathon_gender/merged_results2018.rda")
 load("~/GitHub/marathon_gender/merged_results2016.rda")
 load("~/GitHub/marathon_gender/merged_results2015.rda")
 load("~/GitHub/marathon_gender/merged_results2014.rda")
+load("~/GitHub/marathon_gender/merged_results2013.rda")
+load("~/GitHub/marathon_gender/merged_results2012.rda")
+
 
 merged_df <- merged_df %>%
   mutate(

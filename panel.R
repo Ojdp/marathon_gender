@@ -368,8 +368,28 @@ merged_df2013 <- athlinks_results3%>%
 
 save(merged_df, file = "merged_results2013.rda")
 
+#2012
+base_url <- "https://results.athlinks.com/event/188714?eventCourseId=261507&divisionId=&intervalId=&"
+athlinks_results4 <- get_athlinks_results(base_url)
 
-2012 -> "https://results.athlinks.com/event/188714?eventCourseId=261507&divisionId=&intervalId=&"
+merged_df2012 <- athlinks_results4%>%
+  unnest(time) %>%  # Décompresse la colonne time pour avoir timeInMillis
+  select(country, firstName, lastName, gender, age, entryId, primaryBracketRank, timeInMillis) %>%
+  mutate(
+    # Conversion en durée formatée HH:MM:SS
+    raceTime = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(timeInMillis / 1000) %/% 3600,            # Heures
+      (as.integer(timeInMillis / 1000) %% 3600) %/% 60,    # Minutes
+      as.integer(timeInMillis / 1000) %% 60                # Secondes
+    ),
+    
+    # Ajout de l'année
+    year = 2012
+  )
+
+save(merged_df, file = "merged_results2012.rda")
+
 2011 -> "https://results.athlinks.com/event/160138?eventCourseId=199425&divisionId=&intervalId=&"
 2010 -> "https://results.athlinks.com/event/121993?eventCourseId=166738&divisionId=&intervalId=&"
 2009 -> "https://results.athlinks.com/event/86297?eventCourseId=264050&divisionId=&intervalId=&"
