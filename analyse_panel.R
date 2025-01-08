@@ -4,9 +4,11 @@ load("~/GitHub/marathon_gender/merged_results2023.rda")
 load("~/GitHub/marathon_gender/merged_results2022.rda")
 load("~/GitHub/marathon_gender/merged_results2021.rda")
 load("~/GitHub/marathon_gender/merged_results2019.rda")
+load("~/GitHub/marathon_gender/merged_results2017.rda")
 load("~/GitHub/marathon_gender/merged_results2018.rda")
 load("~/GitHub/marathon_gender/merged_results2016.rda")
 load("~/GitHub/marathon_gender/merged_results2015.rda")
+load("~/GitHub/marathon_gender/merged_results2014.rda")
 
 merged_df <- merged_df %>%
   mutate(
