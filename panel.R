@@ -434,11 +434,75 @@ merged_df2010 <- athlinks_results6%>%
 
 save(merged_df2010, file = "merged_results2010.rda")
 
+#2009
+base_url <- "https://results.athlinks.com/event/86297?eventCourseId=264050&divisionId=&intervalId=&"
+athlinks_results7 <- get_athlinks_results(base_url)
 
-2010 -> ""
-2009 -> "https://results.athlinks.com/event/86297?eventCourseId=264050&divisionId=&intervalId=&"
-2008 -> "https://results.athlinks.com/event/170851?eventCourseId=235625&divisionId=&intervalId=&"
-2007 -> "https://results.athlinks.com/event/163635?eventCourseId=596257&divisionId=&intervalId=&"
+merged_df2009 <- athlinks_results7%>%
+  unnest(time) %>%  # Décompresse la colonne time pour avoir timeInMillis
+  select(country, firstName, lastName, gender, age, entryId, primaryBracketRank, timeInMillis) %>%
+  mutate(
+    # Conversion en durée formatée HH:MM:SS
+    raceTime = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(timeInMillis / 1000) %/% 3600,            # Heures
+      (as.integer(timeInMillis / 1000) %% 3600) %/% 60,    # Minutes
+      as.integer(timeInMillis / 1000) %% 60                # Secondes
+    ),
+    
+    # Ajout de l'année
+    year = 2009
+  )
+
+save(merged_df2009, file = "merged_results2009.rda")
+
+#2008
+base_url <- "https://results.athlinks.com/event/170851?eventCourseId=235625&divisionId=&intervalId=&"
+athlinks_results8 <- get_athlinks_results(base_url)
+
+merged_df2008 <- athlinks_results8%>%
+  unnest(time) %>%  # Décompresse la colonne time pour avoir timeInMillis
+  select(country, firstName, lastName, gender, age, entryId, primaryBracketRank, timeInMillis) %>%
+  mutate(
+    # Conversion en durée formatée HH:MM:SS
+    raceTime = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(timeInMillis / 1000) %/% 3600,            # Heures
+      (as.integer(timeInMillis / 1000) %% 3600) %/% 60,    # Minutes
+      as.integer(timeInMillis / 1000) %% 60                # Secondes
+    ),
+    
+    # Ajout de l'année
+    year = 2008
+  )
+
+save(merged_df2008, file = "merged_results2008.rda")
+
+
+#2007
+base_url <- "https://results.athlinks.com/event/163635?eventCourseId=596257&divisionId=&intervalId=&"
+athlinks_results9 <- get_athlinks_results(base_url)
+
+merged_df2007 <- athlinks_results9%>%
+  unnest(time) %>%  # Décompresse la colonne time pour avoir timeInMillis
+  select(country, firstName, lastName, gender, age, entryId, primaryBracketRank, timeInMillis) %>%
+  mutate(
+    # Conversion en durée formatée HH:MM:SS
+    raceTime = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(timeInMillis / 1000) %/% 3600,            # Heures
+      (as.integer(timeInMillis / 1000) %% 3600) %/% 60,    # Minutes
+      as.integer(timeInMillis / 1000) %% 60                # Secondes
+    ),
+    
+    # Ajout de l'année
+    year = 2007
+  )
+
+save(merged_df2007, file = "merged_results2007.rda")
+
+
+2007 -> ""
 2006 -> "https://results.athlinks.com/event/126836?eventCourseId=146231&divisionId=&intervalId=&"
 2005 -> "https://results.athlinks.com/event/146352?eventCourseId=215850&divisionId=16066627&intervalId=&"
 2004 -> "https://results.athlinks.com/event/174931?eventCourseId=240730&divisionId=16065939&intervalId=&"
