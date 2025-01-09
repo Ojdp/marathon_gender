@@ -390,8 +390,52 @@ merged_df2012 <- athlinks_results4%>%
 
 save(merged_df, file = "merged_results2012.rda")
 
-2011 -> "https://results.athlinks.com/event/160138?eventCourseId=199425&divisionId=&intervalId=&"
-2010 -> "https://results.athlinks.com/event/121993?eventCourseId=166738&divisionId=&intervalId=&"
+#2011
+base_url <- "https://results.athlinks.com/event/160138?eventCourseId=199425&divisionId=&intervalId=&"
+athlinks_results5 <- get_athlinks_results(base_url)
+
+merged_df2011 <- athlinks_results5%>%
+  unnest(time) %>%  # Décompresse la colonne time pour avoir timeInMillis
+  select(country, firstName, lastName, gender, age, entryId, primaryBracketRank, timeInMillis) %>%
+  mutate(
+    # Conversion en durée formatée HH:MM:SS
+    raceTime = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(timeInMillis / 1000) %/% 3600,            # Heures
+      (as.integer(timeInMillis / 1000) %% 3600) %/% 60,    # Minutes
+      as.integer(timeInMillis / 1000) %% 60                # Secondes
+    ),
+    
+    # Ajout de l'année
+    year = 2011
+  )
+
+save(merged_df2011, file = "merged_results2011.rda")
+
+#2010
+base_url <- "https://results.athlinks.com/event/121993?eventCourseId=166738&divisionId=&intervalId=&"
+athlinks_results6 <- get_athlinks_results(base_url)
+
+merged_df2010 <- athlinks_results6%>%
+  unnest(time) %>%  # Décompresse la colonne time pour avoir timeInMillis
+  select(country, firstName, lastName, gender, age, entryId, primaryBracketRank, timeInMillis) %>%
+  mutate(
+    # Conversion en durée formatée HH:MM:SS
+    raceTime = sprintf(
+      "%02d:%02d:%02d",
+      as.integer(timeInMillis / 1000) %/% 3600,            # Heures
+      (as.integer(timeInMillis / 1000) %% 3600) %/% 60,    # Minutes
+      as.integer(timeInMillis / 1000) %% 60                # Secondes
+    ),
+    
+    # Ajout de l'année
+    year = 2010
+  )
+
+save(merged_df2010, file = "merged_results2010.rda")
+
+
+2010 -> ""
 2009 -> "https://results.athlinks.com/event/86297?eventCourseId=264050&divisionId=&intervalId=&"
 2008 -> "https://results.athlinks.com/event/170851?eventCourseId=235625&divisionId=&intervalId=&"
 2007 -> "https://results.athlinks.com/event/163635?eventCourseId=596257&divisionId=&intervalId=&"
